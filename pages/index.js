@@ -1,11 +1,129 @@
 import Head from 'next/head'
 import Image from 'next/image'
 import { Inter } from 'next/font/google'
-import styles from '@/styles/Home.module.css'
+
+import { useRef } from 'react'
+import { useRouter } from 'next/router'
+import { useState } from 'react'
 
 const inter = Inter({ subsets: ['latin'] })
 
+const daysBetweenDates = (date1, date2) => {
+  // console.log('dates', date1, date2)
+  let d1 = new Date(date1).getTime();
+  let d2 = new Date(date2).getTime();
+  return((d1 - d2) / 1000 / 60 / 60 / 24);
+}
+
 export default function Home() {
+  
+  const refBday1 = useRef()
+  const refBday2 = useRef()
+
+  const [moonPic1, setMoonPic1] = useState(null);
+  const [moonPic2, setMoonPic2] = useState(null);
+
+  const router = useRouter();
+
+  const handleFormSubmit = async (e) => {
+    e.preventDefault();
+
+    const api_url = '/api/moonphase'
+    const header1 = {
+      method: 'POST',
+      headers: {
+        'Content-Type' : 'application.json'
+      },
+      body: JSON.stringify({date: refBday1.current.value})
+    }
+
+    const res1 = await fetch(api_url, header1);
+    const data1 = await res1.json();
+    console.log(data1);
+
+    const td1 = refBday1.current.value.split('-');
+    const tmpDate1 = `${td1[1]}/${td1[2]}/${td1[0]}`
+    console.log('TMP DATE', tmpDate1)
+
+    let rel1 = {
+      highOffset: daysBetweenDates(tmpDate1, data1.high.date),
+      lowOffset: daysBetweenDates(tmpDate1, data1.low.date)
+    }
+
+    console.log(rel1)
+
+    const offsetDiff1 = rel1.lowOffset + rel1.highOffset;
+    console.log('offsets 1', offsetDiff1)
+
+    if(Math.abs(rel1.highOffset) <= 1){
+      setMoonPic1(`/moons/${data1.high.phaseid}.jpg`)
+    }else if(Math.abs(offsetDiff1) <= 4){
+      setMoonPic1(`/moons/${data1.low.phaseid}-5.jpg`)
+    }else {
+      setMoonPic1(`/moons/${data1.low.phaseid}.jpg`)
+    }
+
+    // MOON 2
+
+    const header2 = {
+      method: 'POST',
+      headers: {
+        'Content-Type' : 'application.json'
+      },
+      body: JSON.stringify({date: refBday2.current.value})
+    }
+
+    const res2 = await fetch(api_url, header2);
+    const data2 = await res2.json();
+
+    console.log(data2);
+
+    const td2 = refBday2.current.value.split('-');
+    const tmpDate2 = `${td2[1]}/${td2[2]}/${td2[0]}`
+    console.log('TMP DATE', tmpDate2)
+
+    let rel2 = {
+      highOffset: daysBetweenDates(tmpDate2, data2.high.date),
+      lowOffset: daysBetweenDates(tmpDate2, data2.low.date)
+    }
+
+    console.log(rel2)
+
+    const offsetDiff2 = rel2.lowOffset + rel2.highOffset;
+    console.log('offsets 2', offsetDiff2)
+
+    if(Math.abs(rel2.highOffset) <= 1){
+      setMoonPic2(`/moons/${data2.high.phaseid}.jpg`)
+    }else if(Math.abs(offsetDiff2) <= 4){
+      setMoonPic2(`/moons/${data2.low.phaseid}-5.jpg`)
+    }else {
+      setMoonPic2(`/moons/${data2.low.phaseid}.jpg`)
+    }
+
+    console.log('Got Here');
+
+
+    // console.log('Bday1', refBday1.current.value)
+    
+    // console.log('Bday2', refBday2.current.value)
+
+    // router.push(`result/${refBday1.current.value}/${refBday2.current.value}`)
+  }
+
+  const generatePics = () => {
+    return(
+      <div className='grid grid-cols-3'>
+        <Image src={moonPic1} width={250} height={250} alt='moon pic 1'/>
+        <div className=''>
+          <Image className='opacity-50 absolute' src={moonPic1} width={250} height={250} alt='moon pic 1'/>
+          <Image className='opacity-50 absolute' src={moonPic2} width={250} height={250} alt='moon pic 2'/>
+        </div>
+        <Image src={moonPic2} width={250} height={250} alt='moon pic 2'/>
+        
+      </div>
+    )
+  }
+
   return (
     <>
       <Head>
@@ -14,108 +132,34 @@ export default function Home() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main className={styles.main}>
-        <div className={styles.description}>
-          <p>
-            Get started by editing&nbsp;
-            <code className={styles.code}>pages/index.js</code>
-          </p>
-          <div>
-            <a
-              href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              By{' '}
-              <Image
-                src="/vercel.svg"
-                alt="Vercel Logo"
-                className={styles.vercelLogo}
-                width={100}
-                height={24}
-                priority
-              />
-            </a>
-          </div>
+      <div className='z-0'>
+        {/* <div style={{width: '100vw', height: '60vh', position: 'relative'}} className=''> */}
+        <div className='relative w-screen lg:h-screen h-[60vh]'>
+          {/* <image src={'/moons-bg.jpg'}></image> */}
+          <Image src={'/moons-bg.jpg'} fill />
         </div>
+        <div className='bg-black w-screen lg:h-[0px] h-[40vh] relative'>
 
-        <div className={styles.center}>
-          <Image
-            className={styles.logo}
-            src="/next.svg"
-            alt="Next.js Logo"
-            width={180}
-            height={37}
-            priority
-          />
-          <div className={styles.thirteen}>
-            <Image
-              src="/thirteen.svg"
-              alt="13"
-              width={40}
-              height={31}
-              priority
-            />
-          </div>
         </div>
-
-        <div className={styles.grid}>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2 className={inter.className}>
-              Docs <span>-&gt;</span>
-            </h2>
-            <p className={inter.className}>
-              Find in-depth information about Next.js features and&nbsp;API.
-            </p>
-          </a>
-
-          <a
-            href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2 className={inter.className}>
-              Learn <span>-&gt;</span>
-            </h2>
-            <p className={inter.className}>
-              Learn about Next.js in an interactive course with&nbsp;quizzes!
-            </p>
-          </a>
-
-          <a
-            href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2 className={inter.className}>
-              Templates <span>-&gt;</span>
-            </h2>
-            <p className={inter.className}>
-              Discover and deploy boilerplate example Next.js&nbsp;projects.
-            </p>
-          </a>
-
-          <a
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2 className={inter.className}>
-              Deploy <span>-&gt;</span>
-            </h2>
-            <p className={inter.className}>
-              Instantly deploy your Next.js site to a shareable URL
-              with&nbsp;Vercel.
-            </p>
-          </a>
+      </div>
+      
+      
+      <main className='p-4 fixed top-0 left-0 right-0 z-20 '>
+        <div className='bg-white mt-48 ml-80 mr-80 p-8 rounded'>
+          <form onSubmit={handleFormSubmit} className='grid place-content-center'>
+            <label htmlFor='bday1'>Enter First Birthday</label>
+            <input id="bday1" type="date" required={true} ref={refBday1}
+              className="outline-dashed outline-1 py-1 px-2 rounded">
+            </input>
+            <label htmlFor='bday2'>Enter Second Birthday</label>
+            <input id="bday2" type="date" required={true} ref={refBday2}
+              className="outline-dashed outline-1 py-1 px-2 rounded">
+            </input>
+            <button type='submit' className='mt-4 bg-gray-200 py-2 px-4 hover:bg-gray-400 hover:text-white'>Submit</button>
+          </form>
+        </div>
+        <div className='grid place-content-center mt-32'>
+          {moonPic1 && moonPic2? generatePics() : ''}
         </div>
       </main>
     </>
