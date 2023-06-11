@@ -145,20 +145,21 @@ export default function Home() {
       
       
       <main className='p-4 fixed top-0 left-0 right-0 z-20 '>
-        <div className='bg-white mt-48 ml-80 mr-80 p-8 rounded'>
-          <form onSubmit={handleFormSubmit} className='grid place-content-center'>
+        <div className='bg-transparent mt-48 ml-80 mr-80 p-8 rounded'>
+
+          <form onSubmit={handleFormSubmit} className='grid place-content-center text-white'>
             <label htmlFor='bday1'>Enter First Birthday</label>
             <input id="bday1" type="date" required={true} ref={refBday1}
-              className="outline-dashed outline-1 py-1 px-2 rounded">
+              className="outline-dashed outline-1 py-1 px-2 rounded text-black">
             </input>
             <label htmlFor='bday2'>Enter Second Birthday</label>
             <input id="bday2" type="date" required={true} ref={refBday2}
-              className="outline-dashed outline-1 py-1 px-2 rounded">
+              className="outline-dashed outline-1 py-1 px-2 rounded text-black">
             </input>
-            <button type='submit' className='mt-4 bg-gray-200 py-2 px-4 hover:bg-gray-400 hover:text-white'>Submit</button>
+            <button type='submit' className='mt-4 bg-neutral-800 py-2 px-4 hover:bg-gray-400 hover:text-white'>Submit</button>
           </form>
         </div>
-        <div className='grid place-content-center mt-32'>
+        <div className='grid place-content-center mt-32 bg-black'>
           {moonPic1 && moonPic2? generatePics() : ''}
         </div>
       </main>
